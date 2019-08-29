@@ -1,0 +1,57 @@
+﻿#detail-nav {
+    min-height: 50px;
+    padding-left: 0px;
+    padding-right: 0px;
+}
+
+#detail-nav a {
+    line-height: 50px;
+    text-decoration: none;
+    color: #f2f2f2;
+    display: block;
+    font-size: 1.1rem;
+    transition: .3s;
+    padding: 0 30px;
+    cursor: pointer;
+}
+
+#back {
+    /*width: 100px;*/
+    text-align: center;
+}
+
+#detail-nav a:hover {
+    background: rgba(0,0,0,.1);
+}
+
+#detail-nav li {
+    float: left;
+    list-style: none;
+}
+
+li .glyphicon {
+    margin-right: 10px;
+    top: 2px;
+}
+
+#detail-nav .active {
+    background: #0b76ac;
+}
+
+#top-nav {
+    border-bottom: none;
+}
+
+#div2 {
+
+}
+
+#hidden-btn {
+    height:50px;
+    width:240px;
+    margin:0 auto;
+    line-height:50px;
+    font-weight:600;
+    font-size:1.2rem;
+}
+

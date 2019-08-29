@@ -1,0 +1,333 @@
+﻿.btn {
+    margin-top:95px;
+    float: left;
+    margin-left: 40px;
+    position: relative;
+}
+
+.btn .btn__icon {
+    height: 40px;
+}
+
+.btn .btn__shadow {
+    background-color: gray;
+    border-radius: 50%;
+    left: -4px;
+    height: 70px;
+    opacity: 0;
+    pointer-events: none;
+    position: absolute;
+    top: -9px;
+    width: 70px;
+}
+
+.btn .btn__icon .icon__shape {
+    fill: none;
+    stroke: black;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.5px;
+}
+
+.btn .btn__icon .icon__shape--translucide {
+    opacity: 0.2;
+}
+
+.btn .btn__icon .icon__shape--orange {
+    stroke: #ffa700;
+}
+
+.btn--play-pause .btn__icon .icon__shape--circle {
+    height: 40px;
+    stroke-dasharray: 119.38052 119.38052;
+    width: 40px;
+}
+
+.btn--play-pause .btn__icon .icon__shape--line {
+    stroke-dasharray: 12 12;
+}
+
+.btn--play-pause .btn__icon .icon__shape--triangle {
+    stroke-dasharray: 12 38;
+}
+
+p {
+    font-size: 1.1rem;
+    line-height: 2rem;
+    text-indent: 2em;
+    text-align: justify;
+}
+
+#form p {
+    font-size: small;
+    line-height: 1em;
+    text-indent: 0em;
+}
+
+#presets a {
+    border-left: solid #666 1px;
+    padding: 0 10px;
+}
+
+#presets a.first {
+    border-left: none;
+}
+
+#go {
+    display: none;
+}
+
+#keyword {
+    width: 300px;
+}
+
+#fetcher {
+    width: 500px;
+}
+
+#keyword, #go {
+    font-size: 1.5em;
+}
+
+#text {
+    width: 100%;
+    height: 100px;
+    display: none;
+}
+
+p.copy {
+    font-size: small;
+}
+
+#form {
+    font-size: small;
+    position: relative;
+}
+
+hr {
+    border: none;
+    border-bottom: solid #ccc 1px;
+}
+
+a.active {
+    text-decoration: none;
+    color: #000;
+    font-weight: bold;
+    cursor: text;
+}
+
+#angles line, #angles path, #angles circle {
+    stroke: #666;
+}
+
+#angles text {
+    fill: #333;
+}
+
+#angles path.drag {
+    fill: #666;
+    cursor: move;
+}
+
+#angles {
+    text-align: center;
+    margin: 0 auto;
+    width: 350px;
+}
+
+#angles input, #max {
+    width: 42px;
+}
+
+.top-info {
+    background-color: white;
+    box-shadow: 0 1px 2px #c1c1c1;
+}
+
+#peo-nav {
+    padding-left:15px;
+    padding-right:15px;
+}
+
+#nav-wrapper {
+    background-color: white;
+    box-shadow: 0 1px 2px #c1c1c1;
+    margin-left: -5px;
+    margin-right: -15px;
+}
+
+.top-info p {
+    padding: 0px 25px;
+}
+
+.detail-info {
+    margin-top:10px;
+    background-color: #f5f5f5;
+}
+
+
+.peo-title {
+    margin:25px 25px;
+    padding-bottom: 60px;
+    border-bottom: #e6e6e6 solid 1px;
+}
+
+.peo-similar {
+    border-radius: 100%;
+    transition:0.1s;
+    cursor:pointer;
+}
+
+.peo-similar:hover {
+    border: 2px solid #ff7f0e;
+}
+
+.badge {
+    cursor:default;
+}
+
+.table td, .table th {
+    border-bottom: 1px solid #dee2e6;
+}
+
+.fixDiv {
+    position: fixed;
+    top:0;
+}
+
+.txt-title {
+    margin-left:-55px;
+    padding-left:49px;
+    font-size: 1.6rem;
+    border-left: 6px solid #ff7f0e;
+    font-weight:700;
+    margin-top:100px;
+    margin-bottom:25px;
+}
+
+.txt-first{
+    margin-top:0px;
+}
+
+.txt-subtitle {
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-top: 50px;
+    margin-bottom: 25px;
+    line-height: 1.8;
+}
+
+.txt-subtitle::before {
+    background-position:12px 2px;
+    margin-right:4px;
+    vertical-align: baseline;
+}
+
+.txt-subtitle::after {
+    background-position:-92px 0;
+    margin-right:4px;
+    vertical-align: middle;
+}
+
+.txt-subtitle::after, .txt-subtitle::before {
+    content: " ";
+    display: inline-block;
+    width: 20px;
+    height: 18px;
+    background-size: 105px 20px;
+    background-image: url(../Images/right.png);
+    background-repeat: no-repeat;
+}
+
+.card-header {
+    background-color:white;
+}
+
+.rotate {
+    transform: rotate(90deg);
+}
+
+.glyphicon-triangle-right {
+    top: 3px;
+    transition: 0.5s;
+    margin-left: -19px;
+}
+
+.card {
+    border: none;
+    min-height: 60px;
+}
+
+.card a{
+    color: #212529;
+}
+
+.card a:hover {
+    color: #ff7f0e
+}
+
+.card-body a{
+    text-decoration:none;
+}
+
+.card-body a:hover {
+    color:#ff7f0e
+}
+
+#arrow-up {
+    top: 4px;
+    left: 15px;
+    color: black;
+    transition: 0.6s;
+    cursor:pointer;
+}
+
+#arrow-up:hover {
+    color: #ff7f0e;
+}
+
+#detail-nav {
+    min-height:50px;
+    padding-left:0px;
+    padding-right:0px;
+}
+
+#detail-nav a {
+    line-height: 50px;
+    text-decoration: none;
+    color: #f2f2f2;
+    display: block;
+    font-size: 1.1rem;
+    transition: .3s;
+    padding: 0 30px;
+    cursor:pointer;
+}
+
+
+#back {
+    /*width: 100px;*/
+    text-align:center;
+}
+
+#detail-nav a:hover {
+    background: rgba(0,0,0,.1);
+}
+
+#detail-nav li {
+    float: left;
+    list-style: none;
+}
+
+li .glyphicon {
+    margin-right:10px;
+    top:2px;
+}
+
+#detail-nav .active {
+    background: #0b76ac;
+}
+
+#top-nav {
+    border-bottom:none;
+}

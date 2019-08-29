@@ -1,0 +1,91 @@
+﻿html, body, #viewDiv {
+    height:100%;
+    width:100%;
+    padding: 0;
+    margin: 0;
+    overflow:hidden;
+}
+
+#infoDiv {
+    position: absolute;
+    margin-top:15px;
+    left: 60px;
+}
+
+#detail-nav {
+    min-height: 50px;
+    padding-left: 0px;
+    padding-right: 0px;
+}
+
+#detail-nav a {
+    line-height: 50px;
+    text-decoration: none;
+    color: #f2f2f2;
+    display: block;
+    font-size: 1.1rem;
+    transition: .3s;
+    padding: 0 30px;
+    cursor: pointer;
+}
+
+#back {
+    text-align: center;
+}
+
+#detail-nav a:hover {
+    background: rgba(0,0,0,.1);
+}
+
+#detail-nav li {
+    float: left;
+    list-style: none;
+}
+
+li .glyphicon {
+    margin-right: 10px;
+    top: 2px;
+}
+
+#detail-nav .active {
+    background: #0b76ac;
+}
+
+#top-nav {
+    min-height:114.417px;
+    border-bottom: none;
+}
+
+.esri-attribution{
+    display: none;
+}
+
+#info-detail {
+    box-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
+    width: 500px;
+    min-height: 300px;
+    background: white;
+    opacity:0.8;
+    position: absolute;
+    right: -500px;
+    top: 200px;
+    transition: 0.6s;
+    min-width:0;
+}
+
+#info-detail p{
+    font-size:1.1rem;
+    text-indent:2rem;
+    padding:20px 30px;
+    text-align:justify;
+}
+
+#info-detail h2{
+    text-align:center;
+    padding:20px 30px;
+}
+
+#info-detail .badge {
+    font-size:0.8rem;
+    margin-left:12px;
+}

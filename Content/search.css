@@ -1,0 +1,215 @@
+﻿.container {
+
+}
+
+.badge {
+    font-size: 90%;
+}
+
+.member-relation {
+    text-align: left;
+    position: absolute;
+    bottom: 8px;
+}
+
+.errorpPage-box {
+    margin-top:100px;
+    text-align:center;
+}
+
+.errorpPage-tip {
+    margin-top:-100px;
+}
+.errorpPage-img img {
+    width: 30rem;
+    height: 30rem;
+}
+
+.member-image img {
+    width: 100%;
+    height: 100%;
+}
+.member-info p {
+    text-align: justify;
+    text-justify: inter-ideograph;
+    margin-top: 1em;
+    font-size: 1.05rem;
+}
+
+.page-link {
+    color: #666;
+    height: 40px;
+    min-width: 40px;
+    margin-right: 0.8rem;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.search-box {
+    width: 100%;
+    height: auto;
+    position: relative;
+    border: none;
+}
+
+.input-number {
+    outline: none;
+    display: block;
+    width: 95%;
+    height: 3rem;
+    border: none;
+    border-radius: 20px 20px;
+    padding: 0;
+    padding-left: 1rem;
+    font-size: 1rem;
+    background-position: 0.4rem 0.2rem;
+    box-shadow: 0 0 0.4rem #c2c2c2;
+}
+
+::-webkit-input-placeholder {
+    margin-left: 500px;
+}
+
+#peo-search {
+    box-shadow: 0 0 1rem #c2c2c2;
+    display: block;
+    position: absolute;
+    font-size: 1.3rem;
+    width: 9.5rem;
+    height: 3rem;
+    border-radius: 30px 0;
+    right: 0;
+    bottom: 0;
+    background: #1c1c20;
+    text-align: center;
+    line-height: 3rem;
+    color: #fff;
+    transition: 0.3s;
+    cursor: pointer;
+}
+
+#peo-search:hover {
+    background: #FD3B01
+}
+
+/*@media(min-width: 1200px) {
+    .container {
+        max-width: 1200px;
+    }
+}*/
+
+.pagination li:last-child a {
+    margin-right: 0;
+}
+
+.page-item.active .page-link {
+    background-color: #ff7f0e;
+    border-color: #ff7f0e;
+}
+
+/*= common css to all effects =*/
+.single-member {
+    float: left;
+    background-color: #fff;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 4px 6px 0 rgba(0,0,0,.16);
+    padding: 0px 15px 25px 15px;
+    height: 25rem;
+    margin-top: 11rem;
+    cursor: pointer;
+    min-width: 100%;
+}
+
+.member-image img {
+    height: 11.25rem;
+    width: 10rem;
+    vertical-align: middle;
+}
+
+.social-touch a {
+    display: inline-block;
+    width: 27px;
+    height: 26px;
+    vertical-align: middle;
+    margin: 0 2px;
+    background-image: url(../images/social-icons.png);
+    background-repeat: no-repeat;
+    opacity: 0.7;
+    transition: 0.3s;
+}
+
+.social-touch a:hover {
+    opacity: 1;
+    transition: 0.3s;
+}
+
+.fb-touch {
+    background-position: 0 0;
+}
+
+.tweet-touch {
+    background-position: -35px 0;
+}
+
+.linkedin-touch {
+    background-position: -71px 0;
+}
+
+.icon-colored .fb-touch {
+    background-position: 0 -27px;
+}
+
+.icon-colored .tweet-touch {
+    background-position: -35px -27px;
+}
+
+.icon-colored .linkedin-touch {
+    background-position: -71px -27px;
+}
+/*= common css to all effects end =*/
+
+/*= effect-1 css =*/
+.effect-1 {
+    border-radius: 8px 8px 0 0;
+}
+
+    .effect-1 .member-image {
+        border: 2px solid #fff;
+        border-radius: 60px 0;
+        display: inline-block;
+        margin-top: -72px;
+        overflow: hidden;
+        transition: 0.3s;
+    }
+
+    .effect-1 .social-touch {
+        background-color: #ff7f0e;
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        height: 5px;
+        overflow: hidden;
+        padding: 5px 0 0;
+        width: 100%;
+        transition: 0.3s;
+    }
+
+    .effect-1 .member-image img {
+        transition: 0.3s;
+        border-radius: 60px 0;
+    }
+
+    .effect-1:hover .member-image {
+        border-color: #ff7f0e;
+        transition: 0.3s;
+        border-radius: 50%;
+    }
+
+    .effect-1:hover .social-touch {
+        padding: 6px 0;
+        height: 38px;
+        transition: 0.3s;
+    }
+/*= effect-1 css end =*/

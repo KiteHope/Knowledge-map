@@ -1,0 +1,87 @@
+﻿body {
+    background: url(../Images/background.png);
+}
+
+.cluster {
+    margin-top:220px;
+    text-align: center;
+}
+
+#first {
+    margin-top: 120px;
+}
+
+#banner {
+    margin-top: 0rem;
+}
+
+#banner img {
+    height: 600px;
+    width:100%;
+}
+
+.warpper {
+    margin-top:10px;
+    box-shadow: 0px 5px 5px #c1c1c1;
+    background: rgb(255, 255, 255);
+    height: 410px ;
+    cursor:pointer;
+    transition: all 0.3s ease-in;
+}
+
+.warpper:hover {
+    background: #fe7700; 
+    color:white;
+    transform: scale(1.05);
+}
+
+.content {
+    padding: 10px;
+    text-align:center;
+}
+
+.content h3{
+    margin-top:10px;
+}
+
+.cluster p {
+    font-style: italic;
+    margin-top:-16px;
+    text-indent: 3rem;
+    text-align: justify;
+    font-size: 1.2rem;
+    line-height: 2rem;
+    float: left;
+    font-weight:300;
+}
+
+.cluster span {
+    width: 12px;
+    height: 20px;
+    display: inline-block;
+    background: url(../images/arrow-icon.png)no-repeat;
+}
+
+.content img {
+    height:315px;
+    width:100%;
+}
+
+.icons-quote {
+    display: inline-block;
+    background-image: url(../Images/icon.png);
+    background-repeat: no-repeat;
+    background-position: -98px -2px;
+    width: 17px;
+    height: 15px;
+    float: left;
+    margin-top:20px;
+}
+
+.content h5 {
+    font-weight:300;
+}
+
+.unfill .col-md-3 {
+    left:142.5px;
+}
