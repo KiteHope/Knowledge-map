@@ -1,0 +1,47 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>@ViewBag.Title</title>
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/Content/layout.css" rel="stylesheet" />
+    @RenderSection("styles", required: false)
+</head>
+
+<body>
+    <!-- 顶部导航栏 -->
+    <div id="top-nav" class="container-fluid" style="line-height:80px;background:white;margin-bottom:2rem;">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="header">
+                        <img src="/images/logo.png" title="Mabur" />
+                        <ul class="top-nav">
+                            <li><a href="@Url.Action("Index", "Home")">梦回民国</a></li>
+                            <li @if (ViewBag.Title == "民国记忆") { <text>class="active"</text>}><a href="@Url.Action("Index", "Theme")">民国记忆</a></li>
+                            <li @if (ViewBag.Title == "风云人物") { <text>class="active"</text>}><a href="@Url.Action("Search", "Display")">风云人物</a></li>
+                            <li><a href="#About">关于我们</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
+    @RenderBody()
+
+    <!-- 版权信息 -->
+    <div class="container-fluid" style="min-height:10rem;background:#524d49;margin-top:10rem;text-align:center;line-height:10rem">
+        <img src="~/pictures/logo-footer.png" alt="南京师范大学" style="height:57.5px;width:270px;">
+        <span style="color:white;font-size:16px;padding-left:240px">Copyright © 2018 南京师范大学 地理科学学院. All rights reserved.</span>
+    </div>
+    <script src="~/Scripts/jquery-3.3.1.min.js"></script>
+    <script src="~/Scripts/bootstrap.min.js"></script>
+    @RenderSection("scripts", required: false)
+</body>
+
+</html>

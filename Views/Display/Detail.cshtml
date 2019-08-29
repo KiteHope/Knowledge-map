@@ -1,0 +1,498 @@
+﻿@using MongoDB.Bson;
+
+@{
+    ViewBag.Title = "风云人物";
+    var BasicInfo = ViewBag.People["BasicInfo"];
+    var Influence = ViewBag.People["Influence"];
+    var Biography = ViewBag.People["Biography"];
+    var Extension = ViewBag.People["Extension"];
+
+}
+
+@functions{
+
+    //判断字典是否存在
+    bool IsExisit(IEnumerable<String> list)
+    {
+        foreach (var l in list)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    //判断字典数量
+    int GetNum(IEnumerable<String> list, BsonDocument dic)
+    {
+        int count = 0;
+        foreach (var l in list)
+        {
+            if (l != "标签" && dic[l].ToString() != "")
+                count += 1;
+        }
+        return count;
+    }
+
+}
+
+@section styles{
+    <link href="~/Content/detail.css" rel="stylesheet" />
+}
+
+    <!-- 人物信息导航栏 -->
+    <div class="container-fluid" style="background:#0e90d2;margin-top:-2rem;margin-bottom:2rem;">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12" id="detail-nav">
+                    <a id="back" style="float:left" href="/Display/Search"><span style="margin-right:5px;top:1.5px;" class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>返回</a>
+                    <nav style="float:right">
+                        <ul>
+                            <li><a class="active" href="#"><span class="glyphicon glyphicon-tasks" aria-hidden="true"></span>人物档案</a></li>
+                            <li><a href="@Url.Action("About", "Display", new { name = ViewBag.People["Name"]})"><span class="glyphicon glyphicon-tree-deciduous" aria-hidden="true"></span>知识图谱</a></li>
+                            <li><a href="@Url.Action("Vision", "Display", new { name = ViewBag.People["Name"]})"><span class="glyphicon glyphicon-map-marker" aria-hidden="true"></span>场景足迹</a></li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- 人物简介 -->
+    <div class="container top-info">
+        <!-- 人物姓名 -->
+        <div class="row" style="margin:0 auto">
+            <div class="col-md-9">
+                <div class="peo-title">
+                    <h2 style="float:left;">@ViewBag.People["Name"]</h2>
+                    <h5 style="float:left;padding-left:30px;padding-top:10px;"><span class="badge badge-secondary">人物热度：@ViewBag.People["Heat"]</span></h5>
+                </div>
+            </div>
+        </div>
+
+        <!-- 相似人物 -->
+        <div class="row" style="margin:0 auto; ">
+            <div class="col-md-9" style="margin-bottom:30px;">
+                @foreach (var intro in ViewBag.People["Introduction"].AsBsonArray)
+            {<p>@intro</p>}
+                <div style="margin-left:22px;margin-top:60px">
+                    @foreach (var tag in ViewBag.People["BasicInfo"]["标签"].AsBsonArray)
+                {<span style="font-size:1em;margin-left:4px" class="badge badge-light">@tag</span>}
+                </div>
+                <div class="row">
+                    <div class="txt-title" style="margin-left:-15px">时空相似</div>
+                    <div class="col-md-11" style="text-align:center;padding-top:10px;margin-left:25px;">
+                        <div class="row">
+                            @foreach (var similar in ViewBag.People["Similar"].AsBsonArray)
+                        {
+                            <div class="col-md-2">
+                                <img class="peo-similar" title="@similar" alt="@similar" src="~/Images/人物图片/@similar-1.jpg" width="100" height="110">
+                                <h5 style="padding-top:6px;">@similar</h5>
+                            </div>
+                    }
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="col-md-3">
+                <img class="img-thumbnail rounded" src="~/Images/人物图片/@ViewBag.People["Name"]-1.jpg" width="268" height="339" style="margin-right:30px">
+            </div>
+        </div>
+
+        <!-- 人物词云 -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="txt-title" style="margin-left:-15px;float:left">
+                    人物词云
+                </div>
+
+                <!-- 播放按钮 -->
+                <div class="btn btn--play-pause">
+                    <svg viewbox="0 0 40 40" class="btn__icon">
+                        <circle cx="20" cy="20" r="19" transform="rotate(-90 20 20)" class="icon__shape icon__shape--circle icon__shape--orange"></circle>
+                        <circle cx="20" cy="20" r="19" transform="rotate(-90 20 20)" class="icon__shape icon__shape--circle icon__shape--white"></circle>
+                        <polygon points="16,14 16,26 27.5,19.8" class="icon__shape icon__shape--triangle"></polygon>
+                        <line x1="24" y1="14" x2="24" y2="26" class="icon__shape icon__shape--line"></line>
+                    </svg>
+                    <div class="btn__shadow"></div>
+                </div>
+
+
+                <!-- 绘制词云 -->
+                <div id="vis"></div>
+
+                <!-- 选项区 -->
+                <form id="form" style="padding:0px 35px 50px 35px">
+                    <div style="text-align: center">
+                        <div id="presets"></div>
+                        <div id="custom-area">
+                            <textarea id="text">
+
+</textarea>
+                            <button id="go" type="submit"></button>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div style="float: right; text-align: right">
+                        <p><label for="max">Number of words:</label> <input type="number" value="250" min="1" id="max">
+                        <p>
+                            <label for="per-line"><input type="checkbox" id="per-line"> One word per line</label>
+                        <p>
+                            <label>Download:</label>
+                            <button id="download-svg">SVG</button>
+                            <!-- |
+                <a id="download-png" href="#">PNG</a>-->
+                    </div>
+
+                    <div style="float: left">
+                        <p>
+                            <label>Spiral:</label>
+                            <label for="archimedean"><input type="radio" name="spiral" id="archimedean" value="archimedean" checked="checked"> Archimedean</label>
+                            <label for="rectangular"><input type="radio" name="spiral" id="rectangular" value="rectangular"> Rectangular</label>
+                        <p>
+                            <label for="scale">Scale:</label>
+                            <label for="scale-log"><input type="radio" name="scale" id="scale-log" value="log" checked="checked"> log n</label>
+                            <label for="scale-sqrt"><input type="radio" name="scale" id="scale-sqrt" value="sqrt"> √n</label>
+                            <label for="scale-linear"><input type="radio" name="scale" id="scale-linear" value="linear"> n</label>
+                        <p><label for="font">Font:</label> <input type="text" id="font" value="Impact">
+                    </div>
+
+                    <div id="angles">
+                        <p>
+                            <input type="number" id="angle-count" value="5" min="1"> <label for="angle-count">orientations</label>
+                            <label for="angle-from">from</label> <input type="number" id="angle-from" value="-45" min="-90" max="90"> °
+                            <label for="angle-to">to</label> <input type="number" id="angle-to" value="45" min="-90" max="90"> °
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 信息展示 -->
+    <div class="container detail-info" data-spy="scroll">
+        <div class="row">
+            <div id="detail" class="col-md-9" style="background-color:white;box-shadow: 0 1px 2px #c1c1c1;padding:30px 55px 60px 55px;">
+                @{
+                    //基本信息
+                    <div class="txt-title txt-first" id="BasicInfo">基本信息</div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-hover">
+                                <tbody>
+                                    @{
+                                        int index = 0;
+                                        int num_first = int.Parse(Math.Ceiling(GetNum(BasicInfo.Names, BasicInfo) / 2.0).ToString());
+                                        foreach (var key in @BasicInfo.Names)
+                                        {
+                                            if (index >= num_first) { break; }
+                                            else
+                                            {
+                                                if (@key.ToString() != "标签" && @BasicInfo[key].ToString() != "")
+                                                {
+                                                    <tr>
+                                                        <th>@key</th>
+                                                        <td>@BasicInfo[key].ToString()</td>
+                                                    </tr>
+                                                }
+                                                index += 1;
+                                            }
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-hover">
+                                <tbody>
+                                    @{
+                                        index = 0;
+                                        foreach (var key in @BasicInfo.Names)
+                                        {
+                                            if (index >= num_first)
+                                            {
+                                                if (@key.ToString() != "标签" && @BasicInfo[key].ToString() != "")
+                                                {
+                                                    <tr>
+                                                        <th>@key</th>
+                                                        <td>@BasicInfo[key].ToString()</td>
+                                                    </tr>
+                                                }
+                                            }
+                                            index += 1;
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    //成就著述
+                    if (IsExisit(Influence.Names))
+                    {
+                        <div class="txt-title" id="Influence">成就著述</div>
+                        try
+                        {
+                            if (Influence["代表作品"].ToString() != "")
+                            {
+                                <p>代表作品： @Influence["代表作品"].ToString()</p>
+                            }
+                        }
+                        catch { }
+
+                        try
+                        {
+                            if (Influence["主要成就"].ToString() != "")
+                            {
+                                <p>主要成就： @Influence["主要成就"].ToString()</p>
+                            }
+                        }
+                        catch { }
+                    }
+
+                    //生平履历
+                    if (IsExisit(Biography.Names))
+                    {
+                        <div class="txt-title" id="生平履历">生平履历</div>
+                        foreach (var title in Biography.Names)
+                        {
+                            if (Biography.ElementCount > 1)
+                            {
+                                <div class="txt-subtitle" id="@title">@title</div>
+                            }
+                            if (@Biography[title].GetType().ToString() == "MongoDB.Bson.BsonArray")
+                            {
+                                foreach (var path in Biography[title].AsBsonArray)
+                                {
+                                    <p>@path</p>
+                                }
+                            }
+                            else
+                            {
+                                foreach (var sub_title in Biography[title].Names)
+                                {
+                                    foreach (var path in Biography[title][sub_title].AsBsonArray)
+                                    {
+                                        <p>@path</p>
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    //人物轶事
+                    if (IsExisit(Extension.Names))
+                    {
+                        foreach (var title in Extension.Names)
+                        {
+                            <div class="txt-title" id="@title">@title</div>
+                            foreach (var sub_title in Extension[title].Names)
+                            {
+                                if (sub_title.ToString() != "no-title")
+                                {
+                                    <div class="txt-subtitle" id="@sub_title">@sub_title</div>
+                                }
+
+                                foreach (var path in Extension[title][sub_title].AsBsonArray)
+                                {
+                                    <p>@path</p>
+                                }
+                            }
+                        }
+                    }
+                }
+            </div>
+            <div class="col-md-3">
+                <div id="nav-wrapper">
+                    <div id="peo-nav">
+                        <div style="height:30px;"></div>
+                        <div class="txt-title" style="margin-left:-15px;margin-top:0px;padding-left:25px">目 录
+                            <span id="arrow-up" class="glyphicon glyphicon-circle-arrow-up" aria-hidden="true"></span>
+                        </div>
+                        <div id="accordion">
+                            <div class="card">
+                                <div class="card-header">
+                                    <a class="card-link" href="#BasicInfo">
+                                        基本信息
+                                    </a>
+                                </div>
+                            </div>
+
+
+                            @{
+                if (IsExisit(Influence.Names))
+                {
+                    <div class="card">
+                        <div class="card-header">
+                            <a class="collapsed card-link" href="#Influence">成就著述</a>
+                        </div>
+                    </div>
+    }
+                            }
+
+                            @{
+                if (IsExisit(Biography.Names))
+                {
+                    <div class="card">
+                        <div class="card-header">
+                            @if (Biography.ElementCount > 1)
+            {
+                    <a id="Biograpy-card" class="collapsed card-link" data-toggle="collapse" href="#collapseThree">
+                        <span id="triangle1" class="glyphicon glyphicon-triangle-right" aria-hidden="true"></span>
+                        生平履历
+                    </a>
+                    <div id="collapseThree" class="collapse">
+                        @foreach (var title in Biography.Names)
+        {
+                    <div class="card-body">
+                        <a href="#@title">@title</a>
+                    </div>
+    }
+                    </div>
+    }
+    else
+    {
+                    <a id="Biograpy-card" class="collapsed card-link" href="#生平履历">生平履历</a>
+    }
+                        </div>
+
+                    </div>
+    }
+                            }
+
+                            @{
+                if (IsExisit(Extension.Names))
+                {
+                    foreach (var extension in Extension.Names)
+                    {
+                        <div class="card">
+                            <div class="card-header">
+                                @if (Extension[extension].ElementCount <= 1)
+                {
+                    <a class="collapsed card-link" href="#@extension">@extension</a>
+    }
+    else
+    {
+                    <a class="collapsed card-link Extension-card" data-toggle="collapse" href="#@extension-nav">
+                        <span id="triangle-@extension" class="glyphicon glyphicon-triangle-right" aria-hidden="true"></span>
+                        @extension
+                    </a>
+    foreach (var sub_title in Extension[extension].Names)
+    {
+        if (sub_title.ToString() != "no-title")
+        {
+                    <div id="@extension-nav" class="collapse">
+                        <div class="card-body">
+                            <a href="#@sub_title">@sub_title</a>
+                        </div>
+                    </div>
+    }
+
+    }
+    }
+                            </div>
+                        </div>
+    }
+    }
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+@section scripts{
+    <script> 
+        var num = [1, 2, 3, 4, 5, 6, 10, 20, 40, 65, 80, 100, 151];
+        var keyword_count = @ViewBag.People["Keyword"]["Count"];
+    </script>
+    <script src="~/Scripts/d3.v3.min.js"></script>
+    <script src="~/Scripts/cloud.js"></script>
+    <script src="~/Scripts/fonts/hammer.js"></script>
+    <script src="~/Scripts/fonts/main.js"></script>
+    <script>
+        var width = $("#nav-wrapper").width();
+
+        $(function () {
+            menuFixed();
+        });
+
+        function menuFixed() {
+            var _getHeight = $(".col-md-3")[1].offsetTop;
+            window.onscroll = function () {
+                changePos(_getHeight);
+            }
+        }
+
+        function changePos(height) {
+            var end_height = height + $(".detail-info").height();
+            var nav_height = $("#nav-wrapper").height();
+            var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+            if (scrollTop < height) {
+                $("#nav-wrapper").removeClass("fixDiv");
+            }
+            else {
+                $("#nav-wrapper").addClass("fixDiv");
+                $("#peo-nav").css("width", width);
+            }
+
+            if (end_height - scrollTop < nav_height) {
+                $("#nav-wrapper").css("display", "none");
+            }
+            else {
+                $("#nav-wrapper").css("display", "block");
+            }
+        }
+
+        txt = "@ViewBag.People["Keyword"]["Print"]";
+        $("#max").val(@ViewBag.People["Keyword"]["Count"]);
+        $("#text").text(txt.substring(0, txt.length - 1));
+        $("#go").click();
+        $(".peo-similar").click(function ()         {
+            window.location = "http://" + window.location.host + "/Display/Detail/" + $(this).attr("alt");
+        });
+
+        var Bcard_click = function () {
+            var triangle = $("#triangle1")
+            if (triangle.hasClass('rotate')) {
+                triangle.removeClass("rotate");
+            }
+            else {
+                triangle.addClass("rotate");
+            }
+        }
+
+        $("#Biograpy-card").click(Bcard_click);
+        $("#Biograpy-card").dblclick(Bcard_click);
+
+        $(".Extension-card").click(function () {
+            var triangle = $("#triangle-" + $(this).text().replace(/(^\s*)|(\s*$)/g, ""));
+            if (triangle.hasClass('rotate')) {
+                triangle.removeClass("rotate");
+            }
+            else {
+                triangle.addClass("rotate");
+            }
+        });
+
+        $(".Extension-card").dblclick(function () {
+            var triangle = $("#triangle-" + $(this).text().replace(/(^\s*)|(\s*$)/g, ""));
+            if (triangle.hasClass('rotate')) {
+                triangle.removeClass("rotate");
+            }
+            else {
+                triangle.addClass("rotate");
+            }
+        });
+
+       
+        $('#arrow-up').click(function () { $('html,body').animate({ scrollTop: '0px' }, 3000); });
+        $(".card-header:last").css("border-bottom", "none");
+    </script>
+}
+

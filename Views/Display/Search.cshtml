@@ -1,0 +1,177 @@
+﻿@{
+    ViewBag.Title = "风云人物";
+}
+
+@section styles{
+    <link href="~/Content/search.css" rel="stylesheet" />
+}
+
+    <!-- 检索页面内容 -->
+    <div class="container" style="min-height:39rem">
+        <!-- 搜索栏 -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="content search-box">
+                    <input class="input-number" id="input-number" value="" placeholder="输入人名、机构、地名等关键词以查询相关人物" />
+                    <div class="search" id="peo-search"><span class="glyphicon glyphicon-search" aria-hidden="true" style="padding-bottom:5px;"></span>&nbsp&nbsp搜索</div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- 人物信息 -->
+        @{
+        if (ViewBag.Total > 0)
+        {
+            for (int i = 0; i < System.Math.Ceiling(Convert.ToDouble(ViewBag.Entity.Count) / 4); i++)
+            {
+                <div class="row">
+                    @for (int j = 0; j < 4; j++)
+                {
+                    if (i * 4 + j < ViewBag.Entity.Count)
+                    {
+                        <div class="col-md-3">
+                            <div class="single-member effect-1" title="@ViewBag.Entity[i * 4 + j].Name">
+                                <!-- 人物图片 -->
+                                <div class="member-image">
+                                    <img src="~/Images/人物图片/@ViewBag.Entity[i * 4 + j].Name-1.jpg" alt="Member">
+                                </div>
+
+                                <!-- 人物介绍 -->
+                                <div class="member-info">
+                                    <h2 style="margin-bottom:52px;">@ViewBag.Entity[i * 4 + j].Name</h2>
+                                    @*<h4>EnglishName</h4>*@
+                                    @{
+                                        <p>@ViewBag.Entity[i * 4 + j].Introduction[0]</p>
+
+                                    }            <div class="social-touch">
+                                        @*<a class="fb-touch" href="#"></a>
+                                        <a class="tweet-touch" href="#"></a>
+                                        <a class="linkedin-touch" href="#"></a>*@
+                                    </div>
+                                </div>
+
+                                <!-- 人物关系 -->
+                                <div class="member-relation">
+                                    @{
+                                    if (ViewBag.Relation.ContainsKey(@ViewBag.Entity[i * 4 + j].Name))
+                                    {
+                                        foreach (string relation in ViewBag.Relation[@ViewBag.Entity[i * 4 + j].Name])
+                                        {
+                                            <span class="badge badge-pill badge-primary">@relation</span>
+                                    }
+                                }
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                }
+                else { break; }
+            }
+                </div>
+        }
+    }
+    else
+    {
+        <div class="errorpPage-box">
+            <div class="errorpPage-img">
+                <img src="~/Images/404.png">
+            </div>
+            <div class="errorpPage-tip">
+                <h5>抱歉，暂未收录相关人物！</h5>
+            </div>
+        </div>
+    }
+        }
+
+
+
+        <!-- 分页信息 -->
+        @{
+        if (ViewBag.Total > 0)
+        {
+            <div class="row">
+                <div style="margin: 5rem auto 0 auto;max-width:100%;">
+                    <ul class="pagination" style="float:left">
+                        @{
+                            int start;
+                            if (ViewBag.Page <= 4) { start = 1; }
+                            else if (ViewBag.Page + 3 > ViewBag.Count)
+                            {
+                                start = Convert.ToInt32(ViewBag.Count) - 6;
+                                if (start < 0)
+                                {
+                                    start = 1;
+                                }
+                            }
+                            else { start = ViewBag.Page - 3; }
+
+                            if (ViewBag.Page > 1)
+                            {
+                                <li class="page-item"><a class="page-link" href="@Url.Action("Search", "Display", new { entity_name = ViewBag.Search, page = ViewBag.Page - 1})">上一页</a></li>
+                            }
+
+                            for (int i = start; i < start + 7; i++)
+                            {
+                                if (i > ViewBag.Count) { break; }
+                                if (i == ViewBag.Page)
+                                {
+                                    <li class="page-item active"><a class="page-link" href="@Url.Action("Search", "Display", new { entity_name = ViewBag.Search, page = i})">@i</a></li>
+                                }
+                                else
+                                {
+                                    <li class="page-item"><a class="page-link" href="@Url.Action("Search", "Display", new { entity_name = ViewBag.Search, page = i})">@i</a></li>
+                                }
+                            }
+
+                            if (ViewBag.Page < ViewBag.Count){<li class="page-item"><a class="page-link" href="@Url.Action("Search", "Display", new { entity_name = ViewBag.Search, page = ViewBag.Page + 1})">下一页</a></li>}
+                         }
+                    </ul>
+                    <span style="float:left;color:#666;padding:.5rem .75rem"> 共<span>@ViewBag.Count</span>页</span>
+                    <span style="float:left;color:#666;padding:.5rem .5rem;padding-left:0">到第</span>
+                    <input id="page_search" value="@ViewBag.Page" style="height:40px;width:40px;text-align:center;border-radius:3px;border:1px solid #ddd;outline:none;float:left;" onkeyup="value=value.replace(/[^\d]/g,'')" />
+                    <span style="float:left;color:#666;padding:.5rem .5rem">页</span>
+                    <ul class="pagination" style="float:left;padding-left:0.5rem">
+                        <li class="page-item"><a class="page-link" id="search">确定</a></li>
+                    </ul>
+                </div>
+            </div>
+    }
+    else
+    {
+
+    }
+        }
+
+    </div>
+
+@section scripts{
+    <script>
+    //重置搜索栏内容
+    if ('@ViewBag.Search' == 'all')
+        $("#input-number").val('');
+    else
+        $("#input-number").val('@ViewBag.Search');
+
+    //
+    $("#search").click(function () {
+        target = $("#page_search").val();
+        if (target >= 1 && target <= @ViewBag.Count && target != @ViewBag.Page) {
+            window.location = "http://" + window.location.host + "/Display/Search/@ViewBag.Search/" + target
+        }
+    });
+
+    //浏览人物详细信息
+        $(".single-member").click(function () {
+        window.location = "http://" + window.location.host + "/Display/Detail/" + $(this).attr("title");
+    });
+
+    //人物检索
+    $("#peo-search").click(function () {
+        if ($("#input-number").val() == "")
+            window.location = "http://" + window.location.host + "/Display/Search/all";
+        else
+            window.location = "http://" + window.location.host + "/Display/Search/" + $("#input-number").val();
+    });
+    </script>
+}

@@ -1,0 +1,561 @@
+﻿@{
+    ViewBag.Title = "风云人物";
+    int Temp = 0;
+}
+
+@section styles{
+    <link href="~/Scripts/4.8/esri/css/main.css" rel="stylesheet" />
+    <link href="~/Scripts/timePlay.css" rel="stylesheet" />
+    <link href="~/Content/vision.css" rel="stylesheet" />
+}
+
+<!-- 人物信息导航栏 -->
+<div class="container-fllabel" style="background:#0e90d2;margin-top:-2rem;">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12" id="detail-nav">
+                <a id="back" style="float:left" href="/Display/Search"><span style="margin-right:5px;top:1.5px;" class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>返回</a>
+                <nav style="float:right">
+                    <ul>
+                        <li><a href="@Url.Action("Detail", "Display", new { name = ViewBag.Name})"><span class="glyphicon glyphicon-tasks" aria-hidden="true"></span>人物档案</a></li>
+                        <li><a href="@Url.Action("About", "Display", new { name = ViewBag.Name})"><span class="glyphicon glyphicon-tree-deciduous" aria-hidden="true"></span>知识图谱</a></li>
+                        <li><a class="active" href="#"><span class="glyphicon glyphicon-map-marker" aria-hidden="true"></span>场景足迹</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 生平展示 -->
+<div id="viewDiv">
+    <div id="infoDiv">
+        <button type="button" id="swap-btn" class="btn btn-outline-primary">2D</button>
+        <button type="button" id="full-btn" class="btn btn-outline-secondary">全屏</button>
+    </div>
+    <div class="container" id="info-detail">
+        <div class="row">
+            <div class="col-md-12">
+                <h2 id="title" style="border-bottom:#e6e6e6 solid 2px"></h2>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <p id="txt"></p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12" id="place-holder" style="padding:20px 30px;">
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 时间轴 -->
+<div id="timePlay"></div>
+
+@section scripts{
+    <script src="~/Scripts/three.js"></script>
+    <script src="~/Scripts/4.8/init.js"></script>
+    <script src="~/Scripts/draw.js"></script>
+    <script src="~/Scripts/timePlay.js"></script>
+    <script>
+        require([
+            "esri/Map",
+            "esri/config",
+            "esri/request",
+            "esri/Color",
+            "esri/views/SceneView",
+            "esri/widgets/LayerList",
+            "esri/layers/BaseTileLayer",
+            "esri/layers/GraphicsLayer",
+            "esri/Graphic",
+            "esri/views/MapView",
+            "dojo/domReady!"
+        ], function (Map, esriConfig, esriRequest, Color, SceneView, LayerList, BaseTileLayer, GraphicsLayer, Graphic, MapView) {
+            var swapButton = $("#swap-btn");
+            var appConfig = {
+                mapView: null,
+                sceneView: null,
+                activeView: null,
+                container: "viewDiv"
+            }
+
+            $.ajax({
+                url: '/Display/GetPlace',
+                type: "post",
+                data: {name:'@ViewBag.Name'},
+                success: function (data) {
+                    for (key in data) {
+                        key = key.split(',');
+                        add_point(key[0], key[1], 5 * data[key]);
+                    }
+                }
+            });
+
+            var options = {
+                speedFactor: 0.5, // animation is 10 times slower than default
+                //easing: "out-quint" // easing function to slow down when reaching the target
+            };
+
+            //爬取高德图层
+            var TintLayer = BaseTileLayer.createSubclass({
+                properties: {
+                    urlTemplate: null,
+                    tint: {
+                        value: null,
+                        type: Color
+                    }
+                },
+
+                // generate the tile url for a given level, row and column
+                getTileUrl: function (level, row, col) {
+                    return this.urlTemplate.replace("{z}", level).replace("{x}",
+                        col).replace("{y}", row);
+                },
+
+                // This method fetches tiles for the specified level and size.
+                // Override this method to process the data returned from the server.
+                fetchTile: function (level, row, col) {
+
+                    // call getTileUrl() method to construct the URL to tiles
+                    // for a given level, row and col provided by the LayerView
+                    var url = this.getTileUrl(level, row, col);
+
+                    // request for tiles based on the generated url
+                    // set allowImageDataAccess to true to allow
+                    // cross-domain access to create WebGL textures for 3D.
+                    return esriRequest(url, {
+                        responseType: "image",
+                        allowImageDataAccess: true
+                    })
+                        .then(function (response) {
+                            // when esri request resolves successfully
+                            // get the image from the response
+                            var image = response.data;
+                            var width = this.tileInfo.size[0];
+                            var height = this.tileInfo.size[0];
+
+                            // create a canvas with 2D rendering context
+                            var canvas = document.createElement("canvas");
+                            var context = canvas.getContext("2d");
+                            canvas.width = width;
+                            canvas.height = height;
+
+
+                            // Draw the blended image onto the canvas.
+                            context.drawImage(image, 0, 0, width, height);
+
+                            return canvas;
+                        }.bind(this));
+                }
+            });
+
+            // Add stamen url to the list of servers known to support CORS specification.
+            esriConfig.request.corsEnabledServers.push("wprd03.is.autonavi.com/");
+
+            // Create a new instance of the TintLayer and set its properties
+            var stamenTileLayer = new TintLayer({
+                urlTemplate: "https://wprd03.is.autonavi.com/appmaptile?lang=zh_cn&size=1&style=7&&scl=0&type=11&x={x}&y={y}&z={z}",
+                tint: new Color("#004FBB"),
+                title: "高德"
+            });
+
+            // add the new instance of the custom tile layer the map
+            var map = new Map({
+                basemap: "dark-gray",
+                layers: [stamenTileLayer],
+                ground: "world-elevation"  //添加高程数据
+            });
+
+            stamenTileLayer.visible = false;
+
+            var initialViewParams = {
+                map: map,
+                zoom: 4,
+                center: [118.46, 32.02],
+                tilt:60,
+                container: appConfig.container
+            }
+
+            appConfig.sceneView = createView(initialViewParams, "3d");
+
+            appConfig.activeView = appConfig.sceneView;
+
+            initialViewParams.container = null;
+            appConfig.mapView = createView(initialViewParams, "2d");
+
+            swapButton.click(function () {
+                swapView();
+            })
+
+            function swapView() {
+                var is3D = appConfig.activeView.type === "3d";
+                appConfig.activeView.container = null;
+                console.log(is3D);
+                if (is3D) {
+                    appConfig.mapView.viewpoint = appConfig.activeView.viewpoint.clone();
+                    appConfig.mapView.container = appConfig.container;
+                    appConfig.mapView.ui.add(layerList, "top-right");
+                    appConfig.activeView = appConfig.mapView;
+                    swapButton.text("3D");
+                }
+                else {
+                    appConfig.sceneView.viewpoint = appConfig.activeView.viewpoint.clone();
+                    appConfig.sceneView.container = appConfig.container;
+                    appConfig.sceneView.ui.add(layerList1, "top-right");
+                    appConfig.activeView = appConfig.sceneView;
+                    swapButton.text("2D");
+                }
+            }
+
+            function createView(params, type) {
+                var view = null;
+                var is2D = type === "2d";
+                if (is2D) {
+                    view = new MapView(params);
+                } else {
+                    view = new SceneView(params);
+                }
+                return view;
+            }
+
+            // create a layer list widget
+            var layerList = new LayerList({
+                view: appConfig.mapView,
+            });
+            var layerList1 = new LayerList({
+                view: appConfig.sceneView,
+            });
+            appConfig.activeView.ui.add(layerList1, "top-right");
+
+            var graphicsLayer = new GraphicsLayer({
+                title: "轨迹线"
+            });
+
+            var graphicsLayer1 = new GraphicsLayer({
+                title: "足迹点"
+            });
+
+            map.add(graphicsLayer);
+
+            map.add(graphicsLayer1);
+
+            var symbol = {
+                type: "simple-line", // autocasts as new SimpleLineSymbol()
+                color: [128, 128, 128, 0.8],
+                width: 4,
+                cap: "round"
+            };
+
+            var str = [];
+            var time = [];
+            var place = [];
+
+            @foreach (var path in ViewBag.Path)
+            {
+                if (ViewBag.Count < 1000)
+                {
+                    <text>
+            var spline = new THREE.CatmullRomCurve3([
+                @foreach (var coord in path["Coord"])
+                {
+                    <text>
+                        new THREE.Vector3(@coord[0], @coord[1], @coord[2]),
+                    </text>
+                }
+            ]);
+
+            var points_@ViewBag.Count = [];
+
+            spline.getPoints(500).forEach(function (point) {
+                points_@ViewBag.Count .push([point.x, point.y, point.z]);
+            });
+
+            var polylineGraphic_@ViewBag.Count = new Graphic({
+                geometry: {
+                    type: "polyline", // autocasts as new Polyline()
+                    paths: points_@ViewBag.Count
+                },
+                symbol: symbol,
+                label: @ViewBag.Count
+            });
+
+            graphicsLayer.add(polylineGraphic_@ViewBag.Count);
+
+            str.push('@path["txt"]');
+                        @if (path["Time"].Count > 1)
+                        {
+                            <text>
+            time.push('@path["Time"][0].ToString() — @path["Time"][1].ToString()');
+                            </text>
+                        }
+                        else
+                        {
+                            <text>
+            time.push('');
+                            </text>
+                        }
+            var place_temp = [];
+                        @foreach (var place in path["Place"])
+                        {
+                            <text>
+            place_temp.push('@place.ToString()');
+                            </text>
+                        }
+            place.push(place_temp);
+
+                    </text>
+                }
+                ViewBag.Count += 1;
+            }
+
+            function add_path(p1, p2, label, graphicsLayer) {
+                var polylineGraphic = new Graphic({
+                    geometry: {
+                        type: "polyline", // autocasts as new Polyline()
+                        paths: [p1, p2],
+                    },
+                    symbol: symbol,
+                    label: label
+                });
+                graphicsLayer.add(polylineGraphic);
+                return polylineGraphic;
+            }
+
+            function add_point(x, y, size) {
+                if (size > 15)
+                    size = 15;
+                // First create a point geometry
+                var point = {
+                    type: "point",  // autocasts as new Point()
+                    longitude: x,
+                    latitude: y
+                };
+
+                // Create a symbol for drawing the point
+                var markerSymbol = {
+                    type: "simple-marker",  // autocasts as new SimpleMarkerSymbol()
+                    color: [226, 119, 40],
+                    size: size,
+                    outline: { // autocasts as new SimpleLineSymbol()
+                        width: 1,
+                        color: "white"
+                    }
+                };
+
+                // Create a graphic and add the geometry and symbol to it
+                var pointGraphic = new Graphic({
+                    geometry: point,
+                    symbol: markerSymbol
+                });
+                graphicsLayer1.add(pointGraphic);
+            }
+
+            appConfig.mapView.on("click", function (event) {
+                appConfig.mapView.hitTest(event).then(function (response) {
+                    alert("二维地图暂不支持点选，请切换至三维查看！")
+                    //const result = response.results[0];
+                    //if (result) {
+                    //    alert(result.graphic.label);
+                    //}
+                });
+            });
+
+            appConfig.sceneView.on("click", function (event) {
+                appConfig.sceneView.hitTest(event).then(function (response) {
+                    result = response.results[0];
+                    if (result.graphic) {
+                        var symbol1 = {
+                            type: "simple-line", // autocasts as new SimpleLineSymbol()
+                            color: "orange",
+                            width: 4.2,
+                            cap: "round",
+                        };
+                        g = result.graphic.clone();
+                        g.label = result.graphic.label;
+                        graphicsLayer.remove(result.graphic);
+                        g.symbol = symbol1;
+                        setTimeout(function () {
+                            graphicsLayer.add(g);
+                        }, 1);
+                        console.log(result.graphic.label);
+                        $("#title").html(time[result.graphic.label]);
+                        $("#txt").html(str[result.graphic.label]);
+                        var content = "";
+                        for (var i = 0; i < place[result.graphic.label].length; i++) {
+                            content += "<span class=\"badge badge-primary\">" + place[result.graphic.label][i] + "</span>";
+                        }
+                        $("#place-holder").html(content);
+                        $("#info-detail").css("right", "0");
+                    }
+                    else {
+                        var symbol = {
+                            type: "simple-line", // autocasts as new SimpleLineSymbol()
+                            color: [128, 128, 128, 0.8],
+                            width: 4,
+                            cap: "round"
+                        };
+                        var items = graphicsLayer.graphics.items
+                        for (var i = 0; i < items.length; i++) {
+                            (function (i) {
+                                if (items[i].symbol.width == 4.2) {
+                                    g = items[i].clone();
+                                    g.label = items[i].label;
+                                    graphicsLayer.remove(items[i]);
+                                    g.symbol = symbol;
+                                    graphicsLayer.add(g);
+                                }
+                            })(i);
+                        }
+                        $("#info-detail").css("right", "-500px");
+                    }
+                });
+            });
+
+            var graphicsLayer_animation = new GraphicsLayer({
+                title: "动态轨迹线"
+            });
+
+            var current_year = @ViewBag.From;
+            var timeplay = new TimePlay({
+                speed: 10000,//播放速度
+                startDate: @ViewBag.From,//开始日期
+                endDate: @ViewBag.End,//结束日期
+                onClickChangeEnd: function () {//点击后回调
+                    alert("点击时间轴会跳过中间轨迹！");
+                },
+                onAnimateEnd: function () {//时间轴动画每次结束回调
+                    var year = timeplay.curr_day.year;//年
+                    current_year = year;
+                    var flag = 0;
+                    @foreach (var path in ViewBag.Path)
+                    {
+                        if (path["Time"].Count > 1)
+                        {
+                            <text>
+                                if (@path["Time"][0].ToString().Substring(0, 4) == year) {
+                                    flag = 1;
+                                    var spline = new THREE.CatmullRomCurve3([
+                                        @foreach (var coord in path["Coord"])
+                                        {
+                                            <text>
+                                                new THREE.Vector3(@coord[0], @coord[1], @coord[2]),
+                                            </text>
+                                        }
+                                    ]);
+
+                                    var points_@Temp = [];
+
+                                    spline.getPoints(500).forEach(function (point) {
+                                        points_@Temp. push([point.x, point.y, point.z]);
+                                    });
+
+                                    for (var i = 0; i < 500; i++) {
+                                        (function (i) {
+                                            setTimeout(function () {
+                                                p1 = points_@Temp [i];
+                                                p2 = points_@Temp [i + 1];
+                                                add_path(p1, p2, @Temp, graphicsLayer_animation);
+
+                                            }, i * 12);
+                                        })(i);
+                                    }
+                                    $("#title").html(time[@Temp]);
+                                    $("#txt").html(str[@Temp]);
+                                    var content = "";
+                                    for (var i = 0; i < place[ @Temp ].length; i++) {
+                                        content += "<span class=\"badge badge-primary\">" + place[@Temp][i] + "</span>";
+                                    }
+                                    $("#place-holder").html(content);
+                                    $("#info-detail").css("right", "0");
+                                }
+                            </text>
+                        }
+
+                        Temp++;
+                    }
+                    if (!flag) {
+                        $("#info-detail").css("right", "-500px");
+                    }
+                }
+            });
+
+            $(".play").click(function () {
+                if (current_year == @ViewBag.From) {
+                    map.remove(graphicsLayer);
+                    map.remove(graphicsLayer1);
+                    map.add(graphicsLayer_animation);
+
+                    var spline = new THREE.CatmullRomCurve3([
+                        @foreach (var coord in ViewBag.Path[0]["Coord"])
+                        {
+                            <text>
+                                new THREE.Vector3(@coord[0], @coord[1], @coord[2]),
+                            </text>
+                        }
+                    ]);
+
+                    var points = [];
+
+                    spline.getPoints(500).forEach(function (point) {
+                        points.push([point.x, point.y, point.z]);
+                    });
+
+                    var cam = {
+                        position: [114.345496, 8.296066, 2000000],
+                        tilt : 40
+                    }
+
+                    appConfig.sceneView.goTo(cam, options);
+
+                    for (var i = 0; i < 500; i++) {
+                        (function (i) {
+                            setTimeout(function () {
+                                p1 = points[i];
+                                p2 = points[i + 1];
+                                add_path(p1, p2, 0, graphicsLayer_animation);
+
+                            }, i * 10);
+                        })(i);
+                    }
+
+                    $("#title").html(time[0]);
+                    $("#txt").html(str[0]);
+                    var content = "";
+                    for (var i = 0; i < place[0].length; i++) {
+                        content += "<span class=\"badge badge-primary\">" + place[0][i] + "</span>";
+                    }
+                    $("#place-holder").html(content);
+                    $("#info-detail").css("right", "0");
+                }
+            });
+        });
+    </script>
+    <script type="text/javascript">
+
+        $('#full-btn').click(function () {
+            if ($('#infoDiv')[0].offsetTop > 15) {
+                $('html,body').animate({ scrollTop: $("#viewDiv")[0].offsetTop }, 1000);
+                $("#infoDiv").fadeOut(100);
+                setTimeout(function () {
+                    $("#infoDiv").css("margin-top", "0");
+                    $("#infoDiv").css("top", "15px");
+                    $('#full-btn').text("恢复");
+                    $("#infoDiv").fadeIn(500);
+                }, 500);
+            }
+            else {
+                $('html,body').animate({ scrollTop: 0 }, 1000);
+                $("#infoDiv").fadeOut(100);
+                setTimeout(function () {
+                    $("#infoDiv").css("margin-top", "15px");
+                    $("#infoDiv").css("top", "");
+                    $('#full-btn').text("全屏");
+                    $("#infoDiv").fadeIn(500);
+                }, 500);
+            }
+        });
+    </script>
+}
